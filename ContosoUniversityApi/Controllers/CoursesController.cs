@@ -38,7 +38,21 @@ namespace ContosoUniversityApi.Controllers
 
             return item;
         }
-        
+
+        // /courses/1/instructors
+        [HttpGet("{courseId}/instructors")]
+        public ActionResult<IEnumerable<Person>> GetInstructorsByCourse(int courseId)
+        {
+            var sql =
+                "SELECT p.* FROM dbo.Person p " +
+                "WHERE p.Id IN (" +
+                    "SELECT ci.InstructorId " +
+                    "FROM dbo.CourseInstructor ci " +
+                    "WHERE ci.CourseId = @p0" +
+                ")";
+            return db.Person.FromSql(sql, courseId).ToList();
+        }
+
         [HttpPost("")]
         public ActionResult<Course> PostCourse(Course item)
         {
