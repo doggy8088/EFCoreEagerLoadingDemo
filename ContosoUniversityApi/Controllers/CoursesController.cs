@@ -45,6 +45,7 @@ namespace ContosoUniversityApi.Controllers
         {
             var item = db.Course
                 .Include(p => p.CourseInstructor)
+                    .ThenInclude(i => i.Instructor)
                 .FirstOrDefault(p => p.CourseId == courseId);
 
             if (item == null)
@@ -52,9 +53,8 @@ namespace ContosoUniversityApi.Controllers
                 return NotFound();
             }
 
-            return (from p in db.Person
-                    where item.CourseInstructor.Any(i => i.InstructorId == p.Id)
-                    select p).ToList();
+            return (from p in item.CourseInstructor
+                    select p.Instructor).ToList();
         }
 
         [HttpPost("")]
