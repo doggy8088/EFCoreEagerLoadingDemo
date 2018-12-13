@@ -43,14 +43,18 @@ namespace ContosoUniversityApi.Controllers
         [HttpGet("{courseId}/instructors")]
         public ActionResult<IEnumerable<Person>> GetInstructorsByCourse(int courseId)
         {
-            var sql =
-                "SELECT p.* FROM dbo.Person p " +
-                "WHERE p.Id IN (" +
-                    "SELECT ci.InstructorId " +
-                    "FROM dbo.CourseInstructor ci " +
-                    "WHERE ci.CourseId = @p0" +
-                ")";
-            return db.Person.FromSql(sql, courseId).ToList();
+            var item = db.Course
+                .Include(p => p.CourseInstructor)
+                .FirstOrDefault(p => p.CourseId == courseId);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return (from p in db.Person
+                    where item.CourseInstructor.Any(i => i.InstructorId == p.Id)
+                    select p).ToList();
         }
 
         [HttpPost("")]
